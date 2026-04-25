@@ -3,15 +3,12 @@ import os
 import pytz
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
-from flask_sqlalchemy import SQLAlchemy
 
 tz = pytz.timezone("Asia/Kolkata")
 
 class TZFormatter(logging.Formatter):
     def converter(self, timestamp):
         return datetime.fromtimestamp(timestamp, tz)
-
-db = SQLAlchemy()
 
 def setup_logging(app):
     formatter = logging.Formatter(
