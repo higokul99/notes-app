@@ -1,12 +1,12 @@
-from app import db
+from run import db
 
 
 class Note(db.Model):
     __tablename__ = 'notes'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.column(db.String(255), nullable=False)
-    content = db.column(db.Text, nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=False)
 
     def to_dict(self):
         return {
