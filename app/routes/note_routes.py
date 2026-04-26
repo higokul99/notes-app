@@ -20,3 +20,47 @@ def create_note():
     db.session.commit()
 
     return jsonify(note.to_dict()), 201
+
+@note_bp.route("/", methods=["GET"])
+def get_notes():
+    notes = Note.query.all()
+    return jsonify([note.to_dict() for note in notes]), 200
+
+@note_bp.route("/<int:id>", methods=["GET"])
+def get_note(id):
+    note = Note.query.get(id)
+    if not note:
+        return jsonify({"error":"Note not found"}), 404
+    return jsonify(note.to_dict()), 200
+
+@note_bp.route("/<int:id>", methods=["PUT"])
+def update_note(id):
+    note = Note.query.get(id)
+
+    if not note:
+        return jsonify({"error":"Note not found"}), 404
+
+    data = request.get_json()
+
+    title = data.get("title")
+    content = data.get("content")
+
+    if title:
+        note.title = title
+    if content:
+        note.content = content
+    
+    db.session.commit()
+
+    return jsonify(note.to_dict()), 200
+
+@note_bp.route("/<int:id>", methods=["DELETE"])
+def delete_note(id):
+    note = Note.query.get(id)
+
+    if not note:
+        return jsonify({"error":"Note not found"}), 404
+
+    db.session.delete(note)
+    db.session.commit()
+    return jsonify({"message":"Note deleted successfully"}), 200
