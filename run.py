@@ -23,11 +23,14 @@ def create_app():
     from app.routes.note_routes import note_bp
     app.register_blueprint(note_bp, url_prefix="/api/notes")
 
-    # @app.route("/")
-    # def hello_world():
-    #     app.logger.info("Homepage requested")
-    #     return "<h1>Hello, Welcome to notes App!</h>"
+    @app.route("/")
+    def hello_world():
+        app.logger.info("Homepage requested")
+        return "<h1>Hello, Welcome to notes App! Use Endpoints to access CRUD</h>"
 
+    from app.errors.handlers import register_error_handlers
+    register_error_handlers(app)
+    
     return app
 
 app = create_app()

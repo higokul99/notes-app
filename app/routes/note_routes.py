@@ -9,7 +9,11 @@ note_bp = Blueprint('notes', __name__)
 def create_note():
     data = request.get_json()
 
-    if not data or "title" not in data:
+    if not data:
+        return jsonify({"error": "Invalid JSON data"}), 400
+
+    title = data.get("title")
+    if not title or not title.strip():
         return jsonify({"error": "Title is required"}), 400
 
     note = Note(
@@ -17,9 +21,13 @@ def create_note():
         content=data.get("content", "")
     )
     db.session.add(note)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error":"Database error"}), 500
 
-    return jsonify(note.to_dict()), 201
+    return jsonify({"data": note.to_dict(), "message" : "Note created successfully"}), 201
 
 @note_bp.route("/", methods=["GET"])
 def get_notes():
@@ -42,17 +50,27 @@ def update_note(id):
 
     data = request.get_json()
 
+    if not data:
+        return jsonify({"error": "Invalid JSON data"}), 400
+
     title = data.get("title")
     content = data.get("content")
+
+    if title is not None and not title.strip():
+        return jsonify({"error": "Title cannot be empty"}), 400
 
     if title:
         note.title = title
     if content:
         note.content = content
     
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error":"Database error"}), 500
 
-    return jsonify(note.to_dict()), 200
+    return jsonify({"data" : note.to_dict(), "message" : "Notes updated successfully"}), 200
 
 @note_bp.route("/<int:id>", methods=["DELETE"])
 def delete_note(id):
@@ -62,5 +80,9 @@ def delete_note(id):
         return jsonify({"error":"Note not found"}), 404
 
     db.session.delete(note)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error":"Database error"}), 500
     return jsonify({"message":"Note deleted successfully"}), 200
